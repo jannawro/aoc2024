@@ -11,7 +11,8 @@ pub fn part1() {
   |> sort_columns
   |> calculate_distances
   |> sum_list
-  |> io.debug
+  |> int.to_string
+  |> io.println
 }
 
 pub fn part2() {
@@ -19,7 +20,8 @@ pub fn part2() {
   |> split_columns
   |> count_occurences
   |> calculate_similarity
-  |> io.debug
+  |> int.to_string
+  |> io.println
 }
 
 fn split_columns(input: String) -> #(List(Int), List(Int)) {

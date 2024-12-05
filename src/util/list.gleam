@@ -14,3 +14,20 @@ pub fn at(list: List(a), index: Int) -> Result(a, Nil) {
     _, _ -> Error(Nil)
   }
 }
+
+pub fn find_middle(list: List(a)) -> Result(a, Nil) {
+  case list {
+    [] -> Error(Nil)
+    [single] -> Ok(single)
+    _ -> {
+      let length = list |> list.length
+      let middle_index = length / 2
+      list |> at(middle_index)
+    }
+  }
+}
+
+pub fn sum(list: List(Int)) -> Int {
+  list
+  |> list.fold(0, fn(acc, element) { acc + element })
+}

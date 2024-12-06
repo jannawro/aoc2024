@@ -23,7 +23,7 @@ pub fn part1() {
     let assert Ok(mid) = update |> utillist.find_middle
     mid
   })
-  |> utillist.sum
+  |> int.sum
   |> int.to_string
   |> io.println
 }
@@ -46,7 +46,7 @@ pub fn part2() {
     let assert Ok(mid) = update |> utillist.find_middle
     mid
   })
-  |> utillist.sum
+  |> int.sum
   |> int.to_string
   |> io.println
 }

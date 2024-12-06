@@ -10,7 +10,7 @@ pub fn part1() {
   |> split_columns
   |> sort_columns
   |> calculate_distances
-  |> sum_list
+  |> int.sum
   |> int.to_string
   |> io.println
 }
@@ -55,10 +55,6 @@ fn calculate_distances(columns: #(List(Int), List(Int))) -> List(Int) {
   })
 }
 
-fn sum_list(numbers: List(Int)) -> Int {
-  list.fold(numbers, 0, fn(acc, num) { acc + num })
-}
-
 fn count_occurences(columns: #(List(Int), List(Int))) -> List(#(Int, Int)) {
   let #(col1, col2) = columns
   list.map(col1, fn(num) {
@@ -71,5 +67,5 @@ fn calculate_similarity(numbers_with_occurences: List(#(Int, Int))) -> Int {
     let #(number, occurences) = numbers
     number * occurences
   })
-  |> sum_list
+  |> int.sum
 }

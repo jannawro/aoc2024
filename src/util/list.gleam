@@ -26,8 +26,3 @@ pub fn find_middle(list: List(a)) -> Result(a, Nil) {
     }
   }
 }
-
-pub fn sum(list: List(Int)) -> Int {
-  list
-  |> list.fold(0, fn(acc, element) { acc + element })
-}

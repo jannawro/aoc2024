@@ -4,11 +4,12 @@ import gleam/list
 import gleam/result
 import gleam/string
 import util/file
+import util/grid
 import util/list as utillist
 
 pub fn part1() {
   file.read("inputs/day4.txt")
-  |> to_grid
+  |> grid.to
   |> search_grid_for_xmas
   |> int.to_string
   |> io.println
@@ -55,11 +56,11 @@ fn search_grid_for_xmas(grid: List(List(String))) -> Int {
         use direction <- list.map(directions)
         let #(dir_x, dir_y) = direction
         let first = letter
-        let second = grid_at(grid, x_position + dir_x, y_position + dir_y)
+        let second = grid.at(grid, x_position + dir_x, y_position + dir_y)
         let third =
-          grid_at(grid, x_position + dir_x * 2, y_position + dir_y * 2)
+          grid.at(grid, x_position + dir_x * 2, y_position + dir_y * 2)
         let fourth =
-          grid_at(grid, x_position + dir_x * 3, y_position + dir_y * 3)
+          grid.at(grid, x_position + dir_x * 3, y_position + dir_y * 3)
         [first, second, third, fourth]
       }
       |> list.filter(fn(variant) { variant == xmas_graphemes })
@@ -82,13 +83,13 @@ fn search_grid_for_x_mas(grid: List(List(String))) {
   case letter {
     "A" -> {
       let top_left_letter =
-        grid_at(grid, x_position + top_left.0, y_position + top_left.1)
+        grid.at(grid, x_position + top_left.0, y_position + top_left.1)
       let top_right_letter =
-        grid_at(grid, x_position + top_right.0, y_position + top_right.1)
+        grid.at(grid, x_position + top_right.0, y_position + top_right.1)
       let bot_left_letter =
-        grid_at(grid, x_position + bot_left.0, y_position + bot_left.1)
+        grid.at(grid, x_position + bot_left.0, y_position + bot_left.1)
       let bot_right_letter =
-        grid_at(grid, x_position + bot_right.0, y_position + bot_right.1)
+        grid.at(grid, x_position + bot_right.0, y_position + bot_right.1)
 
       let first_diagonal = [top_left_letter, letter, bot_right_letter]
       let second_diagonal = [bot_left_letter, letter, top_right_letter]
@@ -107,12 +108,4 @@ fn search_grid_for_x_mas(grid: List(List(String))) {
     }
     _ -> acc
   }
-}
-
-fn grid_at(grid: List(List(String)), x: Int, y: Int) -> String {
-  grid
-  |> utillist.at(y)
-  |> result.unwrap([])
-  |> utillist.at(x)
-  |> result.unwrap("")
 }

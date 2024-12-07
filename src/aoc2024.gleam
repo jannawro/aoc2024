@@ -5,6 +5,7 @@ import days/day3
 import days/day4
 import days/day5
 import days/day6
+import days/day7
 
 pub fn main() {
   let assert [day] = argv.load().arguments
@@ -32,6 +33,10 @@ pub fn main() {
     "day6" -> {
       day6.part1()
       day6.part2()
+    }
+    "day7" -> {
+      day7.part1()
+      day7.part2()
     }
     _ -> panic
   }

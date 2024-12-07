@@ -1,11 +1,9 @@
 import gleam/int
 import gleam/io
 import gleam/list
-import gleam/result
 import gleam/string
 import util/file
 import util/grid
-import util/list as utillist
 
 pub fn part1() {
   file.read("inputs/day4.txt")

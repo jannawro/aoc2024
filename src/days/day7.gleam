@@ -8,19 +8,7 @@ import util/list as utillist
 pub fn part1() {
   file.read("inputs/day7.txt")
   |> to_equations
-  |> list.filter_map(fn(equation) {
-    let #(target, products) = equation
-    let variants =
-      products
-      |> list.length
-      |> int.subtract(1)
-      |> generate_operations_variants([Add, Multiply])
-
-    case test_operation_variants(equation, variants) {
-      True -> Ok(target)
-      False -> Error(Nil)
-    }
-  })
+  |> find_valid_equations([Add, Multiply])
   |> int.sum
   |> int.to_string
   |> io.println
@@ -29,19 +17,7 @@ pub fn part1() {
 pub fn part2() {
   file.read("inputs/day7.txt")
   |> to_equations
-  |> list.filter_map(fn(equation) {
-    let #(target, products) = equation
-    let variants =
-      products
-      |> list.length
-      |> int.subtract(1)
-      |> generate_operations_variants([Add, Multiply, Combine])
-
-    case test_operation_variants(equation, variants) {
-      True -> Ok(target)
-      False -> Error(Nil)
-    }
-  })
+  |> find_valid_equations([Add, Multiply, Combine])
   |> int.sum
   |> int.to_string
   |> io.println
@@ -71,6 +47,26 @@ type Operation {
   Add
   Multiply
   Combine
+}
+
+fn find_valid_equations(
+  equations: List(#(Int, List(Int))),
+  operations: List(Operation),
+) -> List(Int) {
+  equations
+  |> list.filter_map(fn(equation) {
+    let #(target, products) = equation
+    let variants =
+      products
+      |> list.length
+      |> int.subtract(1)
+      |> generate_operations_variants(operations)
+
+    case test_operation_variants(equation, variants) {
+      True -> Ok(target)
+      False -> Error(Nil)
+    }
+  })
 }
 
 fn test_operation_variants(

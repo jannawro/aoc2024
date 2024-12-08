@@ -1,3 +1,5 @@
+import gleam/int
+import gleam/io
 import gleam/list
 import gleam/result
 import gleam/string
@@ -41,4 +43,24 @@ pub fn replace(
       False -> row
     }
   })
+}
+
+pub fn pretty_print(grid: List(List(String))) -> Nil {
+  grid
+  |> list.map(fn(row) {
+    row
+    |> list.map(fn(cell) {
+      string.pad_end(cell, to: max_width(grid), with: " ")
+    })
+    |> string.join(" ")
+    |> io.println
+  })
+  Nil
+}
+
+fn max_width(grid: List(List(String))) -> Int {
+  grid
+  |> list.flatten
+  |> list.map(string.length)
+  |> list.fold(0, fn(acc, len) { int.max(acc, len) })
 }

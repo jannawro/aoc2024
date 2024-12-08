@@ -64,3 +64,12 @@ fn max_width(grid: List(List(String))) -> Int {
   |> list.map(string.length)
   |> list.fold(0, fn(acc, len) { int.max(acc, len) })
 }
+
+pub fn contains_point(grid: List(List(a)), point: #(Int, Int)) -> Bool {
+  let #(x, y) = point
+  let max_x =
+    list.first(grid) |> result.unwrap([]) |> list.length |> int.subtract(1)
+  let max_y = list.length(grid) |> int.subtract(1)
+
+  x >= 0 && x <= max_x && y >= 0 && y <= max_y
+}

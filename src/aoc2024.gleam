@@ -7,6 +7,8 @@ import days/day5
 import days/day6
 import days/day7
 import days/day8
+import days/day9
+import gleam/io
 
 pub fn main() {
   let assert [day] = argv.load().arguments
@@ -43,6 +45,10 @@ pub fn main() {
       day8.part1()
       day8.part2()
     }
-    _ -> panic
+    "day9" -> {
+      day9.part1()
+      day9.part2()
+    }
+    _ -> io.println("This is not a valid day argument.")
   }
 }

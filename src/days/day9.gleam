@@ -1,96 +1,165 @@
+import gleam/bool
 import gleam/int
 import gleam/io
 import gleam/list
+import gleam/result
 import gleam/string
+import util/file
+import util/list as utillist
 
 pub fn part1() {
-  "2333133121414131402"
-  // file.read("inputs/day9.txt")
-  |> to_disk_map
-  |> to_files
-  |> list.flatten
-  // flattens files to blocks
-  |> compress
-  |> checksum
-  |> io.debug
-  Nil
+  file.read("inputs/day9.txt")
+  |> to_disk
+  |> fragmented_compress
+  |> disk_checksum(0)
+  |> int.to_string
+  |> io.println
 }
 
 pub fn part2() {
-  Nil
+  file.read("inputs/day9.txt")
+  |> to_disk
+  |> defragmented_compress
+  |> disk_checksum(0)
+  |> int.to_string
+  |> io.println
 }
 
-fn to_disk_map(input: String) -> List(String) {
+type Block {
+  File(size: Int, id: Int)
+  Empty(size: Int)
+}
+
+type Disk =
+  List(Block)
+
+fn to_disk(input: String) -> Disk {
   input
   |> string.trim
   |> string.to_graphemes
+  |> list.index_map(fn(char, index) {
+    let assert Ok(size) = int.parse(char)
+    case index % 2 {
+      0 -> File(size: size, id: index / 2)
+      _ -> Empty(size: size)
+    }
+  })
 }
 
-fn to_files(disk_map: List(String)) -> List(List(String)) {
-  let #(evens, odds) =
-    disk_map
-    |> list.index_fold(#([], []), fn(result, element, index) {
-      case index % 2 {
-        0 -> #(list.append(result.0, [element]), result.1)
-        _ -> #(result.0, list.append(result.1, [element]))
+fn fragmented_compress(disk: Disk) -> Disk {
+  let fragmented =
+    list.map(disk, fn(block) {
+      case block {
+        Empty(size) -> list.repeat(Empty(size: 1), size)
+        File(size, id) -> list.repeat(File(size: 1, id: id), size)
       }
     })
+    |> list.flatten
 
-  let new_evens =
-    evens
-    |> list.index_map(fn(char, index) {
-      let assert Ok(num) = int.parse(char)
-      let index_char = int.to_string(index)
-      list.repeat(index_char, num)
+  let takes =
+    fragmented
+    |> list.filter(fn(block) {
+      case block {
+        Empty(..) -> False
+        _ -> True
+      }
     })
-  let new_odds =
-    odds
-    |> list.map(fn(char) {
-      let assert Ok(num) = int.parse(char)
-      list.repeat(".", num)
-    })
-
-  list.interleave([new_evens, new_odds])
-  |> list.filter(fn(x) { !list.is_empty(x) })
+    |> list.reverse
+  let expected_length = list.length(takes)
+  do_fragmented_compress(fragmented, takes, expected_length, [])
 }
 
-fn compress(blocks: List(String)) -> List(String) {
-  let takes = blocks |> list.filter(fn(x) { x != "." }) |> list.reverse
-  let expected_length = takes |> list.length
-  build_compressed(blocks, takes, expected_length, [])
-}
-
-fn build_compressed(
-  blocks: List(String),
-  takes: List(String),
+fn do_fragmented_compress(
+  disk: Disk,
+  takes: List(Block),
   expected_length: Int,
-  result: List(String),
-) -> List(String) {
-  case list.length(result) == expected_length {
-    True -> result
-    False -> {
-      let assert [blocks_first, ..blocks_rest] = blocks
-      case blocks_first {
-        "." -> {
-          let assert [takes_first, ..takes_rest] = takes
-          let new_result = list.append(result, [takes_first])
-          build_compressed(blocks_rest, takes_rest, expected_length, new_result)
-        }
-        _ -> {
-          let new_result = list.append(result, [blocks_first])
-          build_compressed(blocks_rest, takes, expected_length, new_result)
-        }
+  result: Disk,
+) -> Disk {
+  let return = list.length(result) == expected_length
+  use <- bool.guard(return, result)
+  case disk {
+    [] -> result
+    [Empty(..), ..rest] ->
+      case takes {
+        [] -> result
+        [take, ..takes_rest] ->
+          do_fragmented_compress(
+            rest,
+            takes_rest,
+            expected_length,
+            list.append(result, [take]),
+          )
       }
+    [file, ..rest] ->
+      do_fragmented_compress(
+        rest,
+        takes,
+        expected_length,
+        list.append(result, [file]),
+      )
+  }
+}
+
+fn disk_checksum(disk: Disk, acc: Int) -> Int {
+  case disk {
+    [] -> 0
+    [File(0, _), ..rest] -> disk_checksum(rest, acc)
+    [File(s, n), ..rest] ->
+      disk_checksum([File(s - 1, n), ..rest], acc + 1) + n * acc
+    [Empty(n), ..rest] -> disk_checksum(rest, acc + n)
+  }
+}
+
+fn defragmented_compress(disk: Disk) -> Disk {
+  do_defragmented_compress(disk, [])
+}
+
+fn do_defragmented_compress(disk: Disk, result: Disk) -> Disk {
+  let reversed = list.reverse(disk)
+
+  case list.pop(reversed, fn(_) { True }) {
+    Error(_) -> result
+    Ok(#(block, rest)) -> {
+      let remaining = list.reverse(rest)
+      handle_block(block, remaining, result)
     }
   }
 }
 
-fn checksum(compressed_blocks: List(String)) -> Int {
-  compressed_blocks
-  |> list.index_fold(0, fn(acc, char, index) {
-    case int.parse(char) {
-      Error(_) -> acc
-      Ok(num) -> num * index + acc
+fn handle_block(block: Block, disk: Disk, result: Disk) -> Disk {
+  case block {
+    Empty(..) -> do_defragmented_compress(disk, list.prepend(result, block))
+    File(..) -> handle_file(block, disk, result)
+  }
+}
+
+fn handle_file(file: Block, disk: Disk, result: Disk) -> Disk {
+  case find_space_for_file(disk, file) {
+    Error(_) -> do_defragmented_compress(disk, list.prepend(result, file))
+    Ok(new_disk) ->
+      do_defragmented_compress(
+        new_disk,
+        list.prepend(result, Empty(size: file.size)),
+      )
+  }
+}
+
+fn find_space_for_file(disk: Disk, file: Block) -> Result(Disk, Nil) {
+  disk
+  |> utillist.find_with_index(fn(block) {
+    case block {
+      Empty(size) if size >= file.size -> True
+      _ -> False
     }
   })
+  |> result.map(fn(found) {
+    let #(empty, index) = found
+    let disk = utillist.replace_at(disk, file, index)
+    case empty.size == file.size {
+      True -> disk
+      False ->
+        utillist.insert_at(disk, Empty(size: empty.size - file.size), index + 1)
+    }
+  })
+  |> result.map_error(fn(_) { Nil })
 }

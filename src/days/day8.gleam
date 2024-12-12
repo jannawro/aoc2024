@@ -9,7 +9,7 @@ import util/grid
 pub fn part1() {
   let grid =
     file.read("inputs/day8.txt")
-    |> grid.to
+    |> grid.to(fn(x) { Ok(x) })
 
   grid
   |> find_frequencies
@@ -24,7 +24,7 @@ pub fn part1() {
 pub fn part2() {
   let grid =
     file.read("inputs/day8.txt")
-    |> grid.to
+    |> grid.to(fn(x) { Ok(x) })
 
   grid
   |> find_frequencies

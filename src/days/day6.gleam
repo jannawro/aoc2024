@@ -10,7 +10,7 @@ import util/list as utillist
 pub fn part1() {
   let grid =
     file.read("inputs/day6.txt")
-    |> grid.to
+    |> grid.to(fn(x) { Ok(x) })
 
   let guard_start = grid |> find_guard
   let #(traversed, _looped) =
@@ -28,7 +28,7 @@ pub fn part1() {
 pub fn part2() {
   let grid =
     file.read("inputs/day6.txt")
-    |> grid.to
+    |> grid.to(fn(x) { Ok(x) })
 
   let guard_start = grid |> find_guard |> io.debug
   let #(traversed, _looped) =
@@ -92,7 +92,8 @@ fn do_traverse_path(
   {
     True, True -> #(result, True)
     _, _ -> {
-      let next_element = grid |> grid.at(next_position.0, next_position.1)
+      let next_element =
+        grid |> grid.at(next_position.0, next_position.1) |> result.unwrap("")
       case next_element {
         "#" -> {
           let new_direction = direction |> turn_90_degrees

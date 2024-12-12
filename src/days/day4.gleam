@@ -1,13 +1,13 @@
 import gleam/int
 import gleam/io
 import gleam/list
-import gleam/string
+import gleam/result
 import util/file
 import util/grid
 
 pub fn part1() {
   file.read("inputs/day4.txt")
-  |> grid.to
+  |> grid.to(fn(x) { Ok(x) })
   |> search_grid_for_xmas
   |> int.to_string
   |> io.println
@@ -15,21 +15,10 @@ pub fn part1() {
 
 pub fn part2() {
   file.read("inputs/day4.txt")
-  |> to_grid
+  |> grid.to(fn(x) { Ok(x) })
   |> search_grid_for_x_mas
   |> int.to_string
   |> io.println
-}
-
-fn to_grid(input: String) -> List(List(String)) {
-  input
-  |> string.trim
-  |> string.split(on: "\n")
-  |> list.map(fn(line) {
-    line
-    |> string.trim
-    |> string.to_graphemes
-  })
 }
 
 fn search_grid_for_xmas(grid: List(List(String))) -> Int {
@@ -54,11 +43,15 @@ fn search_grid_for_xmas(grid: List(List(String))) -> Int {
         use direction <- list.map(directions)
         let #(dir_x, dir_y) = direction
         let first = letter
-        let second = grid.at(grid, x_position + dir_x, y_position + dir_y)
+        let second =
+          grid.at(grid, x_position + dir_x, y_position + dir_y)
+          |> result.unwrap("")
         let third =
           grid.at(grid, x_position + dir_x * 2, y_position + dir_y * 2)
+          |> result.unwrap("")
         let fourth =
           grid.at(grid, x_position + dir_x * 3, y_position + dir_y * 3)
+          |> result.unwrap("")
         [first, second, third, fourth]
       }
       |> list.filter(fn(variant) { variant == xmas_graphemes })
@@ -82,12 +75,16 @@ fn search_grid_for_x_mas(grid: List(List(String))) {
     "A" -> {
       let top_left_letter =
         grid.at(grid, x_position + top_left.0, y_position + top_left.1)
+        |> result.unwrap("")
       let top_right_letter =
         grid.at(grid, x_position + top_right.0, y_position + top_right.1)
+        |> result.unwrap("")
       let bot_left_letter =
         grid.at(grid, x_position + bot_left.0, y_position + bot_left.1)
+        |> result.unwrap("")
       let bot_right_letter =
         grid.at(grid, x_position + bot_right.0, y_position + bot_right.1)
+        |> result.unwrap("")
 
       let first_diagonal = [top_left_letter, letter, bot_right_letter]
       let second_diagonal = [bot_left_letter, letter, top_right_letter]

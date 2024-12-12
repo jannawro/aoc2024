@@ -5,7 +5,10 @@ import gleam/result
 import gleam/string
 import util/list as utillist
 
-pub fn to(input: String) -> List(List(String)) {
+pub fn to(
+  input: String,
+  converter: fn(String) -> Result(a, Nil),
+) -> List(List(a)) {
   input
   |> string.trim
   |> string.split(on: "\n")
@@ -13,15 +16,16 @@ pub fn to(input: String) -> List(List(String)) {
     line
     |> string.trim
     |> string.to_graphemes
+    |> list.map(converter)
+    |> result.values
   })
 }
 
-pub fn at(grid: List(List(String)), x: Int, y: Int) -> String {
-  grid
-  |> utillist.at(y)
-  |> result.unwrap([])
-  |> utillist.at(x)
-  |> result.unwrap("")
+pub fn at(grid: List(List(a)), x: Int, y: Int) -> Result(a, Nil) {
+  case utillist.at(grid, y) {
+    Ok(row) -> utillist.at(row, x)
+    Error(_) -> Error(Nil)
+  }
 }
 
 pub fn replace(

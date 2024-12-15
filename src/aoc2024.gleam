@@ -2,6 +2,7 @@ import argv
 import days/day1
 import days/day10
 import days/day11
+import days/day12
 import days/day2
 import days/day3
 import days/day4
@@ -58,6 +59,10 @@ pub fn main() {
     "day11" -> {
       day11.part1()
       day11.part2()
+    }
+    "day12" -> {
+      day12.part1()
+      day12.part2()
     }
     _ -> io.println("This is not a valid day argument.")
   }
